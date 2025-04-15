@@ -100,6 +100,18 @@ function updateChordDisplay(chordText, intervals = []) {
 }
 
 function tryTriggerChord() {
+  // Auto-select "7" extension if chord type is "7" and no extension selected
+  if (state.chordType === "7" && !state.extension) {
+    const extButtons = document.querySelectorAll("button[data-type='extension'][data-group='Dominant']");
+    for (const btn of extButtons) {
+      if (btn.dataset.value === "7" && !btn.disabled) {
+        btn.classList.add("active");
+        state.extension = "7";
+        break;
+      }
+    }
+  }
+
   const { root, chordType, extension } = state;
   if (!root || !chordType || !extension) return;
 
