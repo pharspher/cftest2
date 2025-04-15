@@ -61,14 +61,20 @@ function updateExtensionButtonStates() {
   state.extension = null;
 }
 
+function updateChordDisplay(chordText) {
+  const display = document.getElementById("chord-display");
+  display.textContent = chordText || "—";
+}
+
 function tryTriggerChord() {
+
   const { root, chordType, extension } = state;
   if (!root || !chordType || !extension) return;
 
   const chordGroup = chordTypeMap[chordType];
   const chordObj = chordData[chordGroup][extension];
 
-  console.log(`Chord: ${root} ${chordType} ${chordObj.label}`);
+  updateChordDisplay(`${root} ${chordType} ${chordObj.label}`);
   console.log(`Intervals: ${chordObj.intervals.join(", ")}`);
   console.log(`Description: ${chordObj.description}`);
 }
