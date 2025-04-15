@@ -119,16 +119,23 @@ function resolveNote(root, interval) {
 
 function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
-  display.textContent = chordText || "—";
-
   const noteList = document.getElementById("note-list");
+
   if (!chordText || !intervals.length) {
+    display.textContent = "—";
     noteList.textContent = "";
     return;
   }
 
-  const notes = intervals.map(i => resolveNote(state.root, i));
-  noteList.textContent = "Notes: " + notes.join(", ");
+  const chordGroup = chordTypeMap[state.chordType];
+  const chordObj = chordData[chordGroup][state.extension];
+
+  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
+  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
+  const allNotes = [...leftNotes, ...rightNotes];
+
+  display.textContent = chordText + " (" + allNotes.join(", ") + ")";
+  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
 }
 
 function tryTriggerChord() {
