@@ -50,12 +50,27 @@ function handleSelection(type, value, btn) {
 
 function updateExtensionButtonStates() {
   const validGroup = chordTypeMap[state.chordType];
+  const wasExtension = state.extension;
+  let extensionStillValid = false;
+
   document.querySelectorAll("button[data-type='extension']").forEach(btn => {
     const isValid = btn.dataset.group === validGroup;
     btn.disabled = !isValid;
-    if (!isValid) btn.classList.remove("active");
+
+    if (btn.dataset.value === wasExtension && isValid) {
+      extensionStillValid = true;
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
   });
-  state.extension = null;
+
+  if (!extensionStillValid) {
+    state.extension = null;
+    updateChordDisplay(null, []);
+  } else {
+    tryTriggerChord();
+  }
 }
 
 function resolveNote(root, interval) {
@@ -94,7 +109,6 @@ function tryTriggerChord() {
   updateChordDisplay(`${root}${chordObj.label}`, chordObj.intervals);
 }
 
-// Map chord type display label to chord group
 const chordTypeMap = {
   "Maj": "Major",
   "min": "Minor",
