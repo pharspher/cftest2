@@ -52,6 +52,42 @@ function updateExtensionButtonStates() {
   const validGroup = chordTypeMap[state.chordType];
   const wasExtension = state.extension;
   let extensionStillValid = false;
+  let validButtons = [];
+
+  document.querySelectorAll("button[data-type='extension']").forEach(btn => {
+    const isValid = btn.dataset.group === validGroup;
+    btn.disabled = !isValid;
+
+    if (isValid) {
+      validButtons.push(btn);
+    }
+
+    if (btn.dataset.value === wasExtension && isValid) {
+      extensionStillValid = true;
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  if (!extensionStillValid) {
+    state.extension = null;
+    updateChordDisplay(null, []);
+  }
+
+  // Auto-select the only valid extension if exactly one is available
+  if (validButtons.length === 1) {
+    const btn = validButtons[0];
+    btn.classList.add("active");
+    state.extension = btn.dataset.value;
+    tryTriggerChord();
+  } else if (extensionStillValid) {
+    tryTriggerChord();
+  }
+}
+  const validGroup = chordTypeMap[state.chordType];
+  const wasExtension = state.extension;
+  let extensionStillValid = false;
 
   document.querySelectorAll("button[data-type='extension']").forEach(btn => {
     const isValid = btn.dataset.group === validGroup;
