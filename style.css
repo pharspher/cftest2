@@ -1,0 +1,57 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background: #f9f9f9;
+}
+
+h1, h2 {
+  margin: 0.5rem 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+
+.grid {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.root-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.extension-grid {
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+}
+
+.chord-type-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+button {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button.active {
+  background: #4caf50;
+  color: white;
+}
+
+button:disabled {
+  background: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}
