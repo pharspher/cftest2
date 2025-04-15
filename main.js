@@ -85,29 +85,35 @@ function updateExtensionButtonStates() {
   }
 }
 
-
 function resolveNote(root, interval) {
-  const semitoneMap = {
-    "1": [0, "C"], "b2": [1, "Db"], "2": [2, "D"], "#2": [3, "D#"],
-    "b3": [3, "Eb"], "3": [4, "E"], "4": [5, "F"], "#4": [6, "F#"],
-    "b5": [6, "Gb"], "5": [7, "G"], "#5": [8, "G#"], "b6": [8, "Ab"],
-    "6": [9, "A"], "bb7": [9, "A"], "b7": [10, "Bb"], "7": [11, "B"],
-    "b9": [1, "Db"], "9": [2, "D"], "#9": [3, "D#"],
-    "11": [5, "F"], "#11": [6, "F#"],
-    "b13": [8, "Ab"], "13": [9, "A"]
+  const semitoneOffsets = {
+    "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
+    "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
+    "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
+  };
+
+  const enharmonicMap = {
+    1: { default: "C#", flat: "Db" },
+    3: { default: "D#", flat: "Eb", sharp: "D#" },
+    6: { default: "F#", flat: "Gb", sharp: "F#" },
+    8: { default: "G#", flat: "Ab", sharp: "G#" },
+    10: { default: "A#", flat: "Bb", sharp: "A#" }
   };
 
   const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const baseIndex = chromatic.indexOf(root);
-  const [offset, preferredName] = semitoneMap[interval] ?? [0, root];
+  const offset = semitoneOffsets[interval] ?? 0;
+  const resolvedIndex = (baseIndex + offset) % 12;
+  const rawNote = chromatic[resolvedIndex];
 
-  const resultIndex = (baseIndex + offset) % 12;
-  const resultNote = chromatic[resultIndex];
+  if (enharmonicMap[resolvedIndex]) {
+    if (interval.includes("b")) return enharmonicMap[resolvedIndex].flat;
+    if (interval.includes("#")) return enharmonicMap[resolvedIndex].sharp;
+    return enharmonicMap[resolvedIndex].default;
+  }
 
-  // Prefer enharmonic spelling defined in semitoneMap
-  return preferredName;
+  return rawNote;
 }
-
 
 function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
