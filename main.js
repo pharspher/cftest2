@@ -75,36 +75,12 @@ function updateExtensionButtonStates() {
     updateChordDisplay(null, []);
   }
 
-  // Auto-select the only valid extension if exactly one is available
   if (validButtons.length === 1) {
     const btn = validButtons[0];
     btn.classList.add("active");
     state.extension = btn.dataset.value;
     tryTriggerChord();
   } else if (extensionStillValid) {
-    tryTriggerChord();
-  }
-}
-  const validGroup = chordTypeMap[state.chordType];
-  const wasExtension = state.extension;
-  let extensionStillValid = false;
-
-  document.querySelectorAll("button[data-type='extension']").forEach(btn => {
-    const isValid = btn.dataset.group === validGroup;
-    btn.disabled = !isValid;
-
-    if (btn.dataset.value === wasExtension && isValid) {
-      extensionStillValid = true;
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
-  });
-
-  if (!extensionStillValid) {
-    state.extension = null;
-    updateChordDisplay(null, []);
-  } else {
     tryTriggerChord();
   }
 }
@@ -136,7 +112,6 @@ function updateChordDisplay(chordText, intervals = []) {
 }
 
 function tryTriggerChord() {
-  // Auto-select "7" extension if chord type is "7" and no extension selected
   if (state.chordType === "7" && !state.extension) {
     const extButtons = document.querySelectorAll("button[data-type='extension'][data-group='Dominant']");
     for (const btn of extButtons) {
