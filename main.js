@@ -14,7 +14,7 @@ function renderButtons(containerId, items, type) {
     btn.textContent = label;
     btn.dataset.type = type;
     btn.dataset.value = label;
-    btn.onclick = () => handleSelection(type, label, btn);
+    btn.onpointerdown = () => handleSelection(type, label, btn);
     container.appendChild(btn);
   });
 }
@@ -29,7 +29,7 @@ function renderExtensionButtons(extensionMap) {
       btn.dataset.value = key;
       btn.dataset.group = group;
       btn.disabled = true;
-      btn.onclick = () => handleSelection("extension", key, btn);
+      btn.onpointerdown = () => handleSelection("extension", key, btn);
       container.appendChild(btn);
     });
   });
