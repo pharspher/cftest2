@@ -1,4 +1,4 @@
-const roots = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const roots = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
 const chordTypes = ["Maj", "min", "7", "dim", "aug", "sus4"];
 let chordData = {};
 let state = {
@@ -93,23 +93,25 @@ function resolveNote(root, interval) {
   };
 
   const enharmonicMap = {
-    1: { default: "C#", flat: "Db" },
-    3: { default: "D#", flat: "Eb", sharp: "D#" },
-    6: { default: "F#", flat: "Gb", sharp: "F#" },
-    8: { default: "G#", flat: "Ab", sharp: "G#" },
-    10: { default: "A#", flat: "Bb", sharp: "A#" }
+    1: { sharp: "C#", flat: "Db" },
+    3: { sharp: "D#", flat: "Eb" },
+    6: { sharp: "F#", flat: "Gb" },
+    8: { sharp: "G#", flat: "Ab" },
+    10: { sharp: "A#", flat: "Bb" }
   };
 
   const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const baseIndex = chromatic.indexOf(root);
+  const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+
+  const useFlats = root.includes("b");
+  const normalizedRoot = aliasMap[root] || root;
+  const baseIndex = chromatic.indexOf(normalizedRoot);
   const offset = semitoneOffsets[interval] ?? 0;
   const resolvedIndex = (baseIndex + offset) % 12;
   const rawNote = chromatic[resolvedIndex];
 
   if (enharmonicMap[resolvedIndex]) {
-    if (interval.includes("b")) return enharmonicMap[resolvedIndex].flat;
-    if (interval.includes("#")) return enharmonicMap[resolvedIndex].sharp;
-    return enharmonicMap[resolvedIndex].default;
+    return useFlats ? enharmonicMap[resolvedIndex].flat : enharmonicMap[resolvedIndex].sharp;
   }
 
   return rawNote;
