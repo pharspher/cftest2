@@ -36,14 +36,11 @@ function renderExtensionButtons(extensionMap) {
 }
 
 function handleSelection(type, value, btn) {
-  // Deactivate all of the same type
   document.querySelectorAll(`button[data-type='${type}']`).forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
 
-  // Update state
   state[type === "chordType" ? "chordType" : type] = value;
 
-  // Update valid extensions
   if (type === "chordType") {
     updateExtensionButtonStates();
   }
@@ -61,25 +58,43 @@ function updateExtensionButtonStates() {
   state.extension = null;
 }
 
-function updateChordDisplay(chordText) {
+function resolveNote(root, interval) {
+  const semitones = {
+    "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
+    "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
+    "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
+  };
+  const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const baseIndex = chromatic.indexOf(root);
+  const offset = semitones[interval] ?? 0;
+  return chromatic[(baseIndex + offset) % 12];
+}
+
+function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
   display.textContent = chordText || "—";
+
+  const noteList = document.getElementById("note-list");
+  if (!chordText || !intervals.length) {
+    noteList.textContent = "";
+    return;
+  }
+
+  const notes = intervals.map(i => resolveNote(state.root, i));
+  noteList.textContent = "Notes: " + notes.join(", ");
 }
 
 function tryTriggerChord() {
-
   const { root, chordType, extension } = state;
   if (!root || !chordType || !extension) return;
 
   const chordGroup = chordTypeMap[chordType];
   const chordObj = chordData[chordGroup][extension];
 
-  updateChordDisplay(`${root}${chordObj.label}`);
-  console.log(`Intervals: ${chordObj.intervals.join(", ")}`);
-  console.log(`Description: ${chordObj.description}`);
+  updateChordDisplay(`${root}${chordObj.label}`, chordObj.intervals);
 }
 
-// Link chordType to chordData group
+// Map chord type display label to chord group
 const chordTypeMap = {
   "Maj": "Major",
   "min": "Minor",
