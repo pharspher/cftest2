@@ -74,7 +74,7 @@ function tryTriggerChord() {
   const chordGroup = chordTypeMap[chordType];
   const chordObj = chordData[chordGroup][extension];
 
-  updateChordDisplay(`${root} ${chordType} ${chordObj.label}`);
+  updateChordDisplay(`${root}${chordObj.label}`);
   console.log(`Intervals: ${chordObj.intervals.join(", ")}`);
   console.log(`Description: ${chordObj.description}`);
 }
