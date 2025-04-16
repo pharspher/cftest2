@@ -117,6 +117,7 @@ function resolveNote(originalRoot, interval) {
   return rawNote;
 }
 
+
 function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
   const noteList = document.getElementById("note-list");
@@ -126,6 +127,19 @@ function updateChordDisplay(chordText, intervals = []) {
     noteList.textContent = "";
     return;
   }
+
+  const chordGroup = chordTypeMap[state.chordType];
+  const chordObj = chordData[chordGroup][state.extension];
+
+  const allVoicingIntervals = [...chordObj.voicing.left, ...chordObj.voicing.right];
+  const allNotes = allVoicingIntervals.map(i => resolveNote(state.root, i));
+
+  display.textContent = `${state.root}${chordObj.label} (${allNotes.join(", ")})`;
+
+  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
+  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
+  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
+}
 
   const chordGroup = chordTypeMap[state.chordType];
   const chordObj = chordData[chordGroup][state.extension];
