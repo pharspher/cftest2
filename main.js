@@ -85,8 +85,6 @@ function updateExtensionButtonStates() {
   }
 }
 
-
-
 function resolveNote(originalRoot, interval) {
   const semitoneOffsets = {
     "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
@@ -118,44 +116,6 @@ function resolveNote(originalRoot, interval) {
 
   return rawNote;
 }
-  };
-
-  const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
-
-  const useFlats = originalRoot.includes("b");
-  const normalizedRoot = aliasMap[originalRoot] || originalRoot;
-  const baseIndex = chromatic.indexOf(normalizedRoot);
-  const offset = semitoneOffsets[interval] ?? 0;
-  const resolvedIndex = (baseIndex + offset) % 12;
-  const rawNote = chromatic[resolvedIndex];
-
-  if (enharmonicMap[resolvedIndex]) {
-    return useFlats ? enharmonicMap[resolvedIndex].flat : enharmonicMap[resolvedIndex].sharp;
-  }
-
-  return rawNote;
-}
-  };
-
-  const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
-
-  const useFlats = root.includes("b");
-  const normalizedRoot = aliasMap[root] || root;
-  const baseIndex = chromatic.indexOf(normalizedRoot);
-  const offset = semitoneOffsets[interval] ?? 0;
-  const resolvedIndex = (baseIndex + offset) % 12;
-  const rawNote = chromatic[resolvedIndex];
-
-  if (enharmonicMap[resolvedIndex]) {
-    return useFlats ? enharmonicMap[resolvedIndex].flat : enharmonicMap[resolvedIndex].sharp;
-  }
-
-  return rawNote;
-}
-
-
 
 function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
@@ -172,8 +132,8 @@ function updateChordDisplay(chordText, intervals = []) {
 
   const allVoicingIntervals = [...chordObj.voicing.left, ...chordObj.voicing.right];
   const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const baseIndex = chromatic.indexOf(({"Db":"C#","Eb":"D#","Gb":"F#","Ab":"G#","Bb":"A#"}[state.root] || state.root));
-  const useFlats = state.root.includes("b");
+  const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+  const baseIndex = chromatic.indexOf(aliasMap[state.root] || state.root);
 
   const resolvedVoicing = allVoicingIntervals.map(interval => {
     const note = resolveNote(state.root, interval);
@@ -190,28 +150,6 @@ function updateChordDisplay(chordText, intervals = []) {
 
   const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
   const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
-  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
-}
-
-  const chordGroup = chordTypeMap[state.chordType];
-  const chordObj = chordData[chordGroup][state.extension];
-
-  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
-  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
-  const allNotes = [...leftNotes, ...rightNotes];
-
-  display.textContent = `${state.root}${chordObj.label} (${allNotes.join(", ")})`;
-  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
-}
-
-  const chordGroup = chordTypeMap[state.chordType];
-  const chordObj = chordData[chordGroup][state.extension];
-
-  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
-  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
-  const allNotes = [...leftNotes, ...rightNotes];
-
-  display.textContent = chordText + " (" + allNotes.join(", ") + ")";
   noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
 }
 
