@@ -85,7 +85,7 @@ function updateExtensionButtonStates() {
   }
 }
 
-function resolveNote(originalRoot, interval) {
+function resolveNote(root, interval) {
   const semitoneOffsets = {
     "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
     "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
@@ -103,11 +103,11 @@ function resolveNote(originalRoot, interval) {
   const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
-  const useFlats = originalRoot.includes("b");
-  const normalizedRoot = aliasMap[originalRoot] || originalRoot;
+  const useFlats = root.includes("b");
+  const normalizedRoot = aliasMap[root] || root;
   const baseIndex = chromatic.indexOf(normalizedRoot);
   const offset = semitoneOffsets[interval] ?? 0;
-  const resolvedIndex = (baseIndex + offset + 12) % 12;
+  const resolvedIndex = (baseIndex + offset) % 12;
   const rawNote = chromatic[resolvedIndex];
 
   if (enharmonicMap[resolvedIndex]) {
@@ -119,23 +119,16 @@ function resolveNote(originalRoot, interval) {
 
 function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
-  const noteList = document.getElementById("note-list");
+  display.textContent = chordText || "—";
 
+  const noteList = document.getElementById("note-list");
   if (!chordText || !intervals.length) {
-    display.textContent = "—";
     noteList.textContent = "";
     return;
   }
 
-  const chordGroup = chordTypeMap[state.chordType];
-  const chordObj = chordData[chordGroup][state.extension];
-
-  const allNotes = intervals.map(i => resolveNote(state.root, i));
-  display.textContent = `${state.root}${chordObj.label} (${allNotes.join(", ")})`;
-
-  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
-  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
-  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
+  const notes = intervals.map(i => resolveNote(state.root, i));
+  noteList.textContent = "Notes: " + notes.join(", ");
 }
 
 function tryTriggerChord() {
