@@ -117,7 +117,6 @@ function resolveNote(originalRoot, interval) {
   return rawNote;
 }
 
-
 function updateChordDisplay(chordText, intervals = []) {
   const display = document.getElementById("chord-display");
   const noteList = document.getElementById("note-list");
@@ -133,45 +132,6 @@ function updateChordDisplay(chordText, intervals = []) {
 
   const allNotes = intervals.map(i => resolveNote(state.root, i));
   display.textContent = `${state.root}${chordObj.label} (${allNotes.join(", ")})`;
-
-  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
-  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
-  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
-}
-
-  const chordGroup = chordTypeMap[state.chordType];
-  const chordObj = chordData[chordGroup][state.extension];
-
-  const allVoicingIntervals = [...chordObj.voicing.left, ...chordObj.voicing.right];
-  const allNotes = allVoicingIntervals.map(i => resolveNote(state.root, i));
-
-  display.textContent = `${state.root}${chordObj.label} (${allNotes.join(", ")})`;
-
-  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
-  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
-  noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
-}
-
-  const chordGroup = chordTypeMap[state.chordType];
-  const chordObj = chordData[chordGroup][state.extension];
-
-  const allVoicingIntervals = [...chordObj.voicing.left, ...chordObj.voicing.right];
-  const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
-  const baseIndex = chromatic.indexOf(aliasMap[state.root] || state.root);
-
-  const resolvedVoicing = allVoicingIntervals.map(interval => {
-    const note = resolveNote(state.root, interval);
-    const absIndex = (baseIndex + ({
-      "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
-      "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
-      "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
-    }[interval] || 0)) % 12;
-    return { name: note, index: absIndex };
-  });
-
-  const sorted = resolvedVoicing.sort((a, b) => a.index - b.index).map(n => n.name);
-  display.textContent = `${state.root}${chordObj.label} (${sorted.join(", ")})`;
 
   const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
   const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
