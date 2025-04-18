@@ -1,3 +1,4 @@
+
 const roots = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
 const chordTypes = ["Maj", "min", "7", "dim", "aug", "sus4"];
 let chordData = {};
@@ -7,11 +8,18 @@ let state = {
   extension: null
 };
 
+const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const semitoneOffsets = {
+  "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
+  "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
+  "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
+};
+const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 const majorScales = {
   "C": ["C", "D", "E", "F", "G", "A", "B"],
   "C#": ["C#", "D#", "E#", "F#", "G#", "A#", "B#"],
   "D": ["D", "E", "F#", "G", "A", "B", "C#"],
-  "D#": ["D#", "E#", "G", "G#", "A#", "B#", "C##"],
+  "D#": ["D#", "E#", "F##", "G#", "A#", "B#", "C##"],
   "E": ["E", "F#", "G#", "A", "B", "C#", "D#"],
   "F": ["F", "G", "A", "Bb", "C", "D", "E"],
   "F#": ["F#", "G#", "A#", "B", "C#", "D#", "E#"],
@@ -27,13 +35,39 @@ const majorScales = {
   "Bb": ["Bb", "C", "D", "Eb", "F", "G", "A"]
 };
 
-const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const semitoneOffsets = {
-  "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
-  "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
-  "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
+const intervalToDegree = {
+  "1": 0, "b2": 1, "2": 1, "#2": 1, "b3": 2, "3": 2,
+  "4": 3, "#4": 3, "b5": 4, "5": 4, "#5": 4,
+  "b6": 5, "6": 5, "bb7": 6, "b7": 6, "7": 6,
+  "b9": 1, "9": 1, "#9": 1, "11": 3, "#11": 3,
+  "b13": 5, "13": 5
 };
-const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+
+function resolveNote(root, interval) {
+  const offset = semitoneOffsets[interval] ?? 0;
+  const normalized = aliasMap[root] || root;
+  const baseIndex = chromatic.indexOf(normalized);
+  const resolvedIndex = (baseIndex + offset + 12) % 12;
+  const rawNote = chromatic[resolvedIndex];
+
+  const scale = majorScales[root];
+  if (!scale) return rawNote;
+
+  const accidental = interval.startsWith("b") ? "b" :
+                     interval.startsWith("#") ? "#" : "";
+
+  const degree = intervalToDegree[interval];
+  if (degree === undefined || !scale[degree]) return rawNote;
+
+  let baseNote = scale[degree];
+  if (accidental === "b" && !baseNote.includes("b") && !baseNote.includes("#")) {
+    return baseNote + "b";
+  }
+  if (accidental === "#" && !baseNote.includes("b") && !baseNote.includes("#")) {
+    return baseNote + "#";
+  }
+  return baseNote;
+}
 
 function renderButtons(containerId, items, type) {
   const container = document.getElementById(containerId);
@@ -66,13 +100,9 @@ function renderExtensionButtons(extensionMap) {
 function handleSelection(type, value, btn) {
   document.querySelectorAll(`button[data-type='${type}']`).forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-
   state[type === "chordType" ? "chordType" : type] = value;
 
-  if (type === "chordType") {
-    updateExtensionButtonStates();
-  }
-
+  if (type === "chordType") updateExtensionButtonStates();
   tryTriggerChord();
 }
 
@@ -86,9 +116,7 @@ function updateExtensionButtonStates() {
     const isValid = btn.dataset.group === validGroup;
     btn.disabled = !isValid;
 
-    if (isValid) {
-      validButtons.push(btn);
-    }
+    if (isValid) validButtons.push(btn);
 
     if (btn.dataset.value === wasExtension && isValid) {
       extensionStillValid = true;
@@ -111,23 +139,6 @@ function updateExtensionButtonStates() {
   } else if (extensionStillValid) {
     tryTriggerChord();
   }
-}
-
-function resolveNote(root, interval) {
-  const offset = semitoneOffsets[interval] ?? 0;
-  const normalized = aliasMap[root] || root;
-  const baseIndex = chromatic.indexOf(normalized);
-  const resolvedIndex = (baseIndex + offset + 12) % 12;
-  const rawNote = chromatic[resolvedIndex];
-
-  const scale = majorScales[root];
-  if (!scale) return rawNote;
-
-  const baseLetter = root[0];
-  const expectedLetter = String.fromCharCode(((baseLetter.charCodeAt(0) - 65 + Math.floor(offset / 2) + 1) % 7) + 65);
-
-  const match = scale.find(note => note[0] === expectedLetter);
-  return match || rawNote;
 }
 
 function updateChordDisplay(chordText, intervals = []) {
