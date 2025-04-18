@@ -1,4 +1,3 @@
-
 const roots = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "Db", "Eb", "Gb", "Ab", "Bb"];
 const chordTypes = ["Maj", "min", "7", "dim", "aug", "sus4"];
 let chordData = {};
@@ -7,6 +6,34 @@ let state = {
   chordType: null,
   extension: null
 };
+
+const majorScales = {
+  "C": ["C", "D", "E", "F", "G", "A", "B"],
+  "C#": ["C#", "D#", "E#", "F#", "G#", "A#", "B#"],
+  "D": ["D", "E", "F#", "G", "A", "B", "C#"],
+  "D#": ["D#", "E#", "G", "G#", "A#", "B#", "C##"],
+  "E": ["E", "F#", "G#", "A", "B", "C#", "D#"],
+  "F": ["F", "G", "A", "Bb", "C", "D", "E"],
+  "F#": ["F#", "G#", "A#", "B", "C#", "D#", "E#"],
+  "G": ["G", "A", "B", "C", "D", "E", "F#"],
+  "G#": ["G#", "A#", "B#", "C#", "D#", "E#", "F##"],
+  "A": ["A", "B", "C#", "D", "E", "F#", "G#"],
+  "A#": ["A#", "B#", "C##", "D#", "E#", "F##", "G##"],
+  "B": ["B", "C#", "D#", "E", "F#", "G#", "A#"],
+  "Db": ["Db", "Eb", "F", "Gb", "Ab", "Bb", "C"],
+  "Eb": ["Eb", "F", "G", "Ab", "Bb", "C", "D"],
+  "Gb": ["Gb", "Ab", "Bb", "Cb", "Db", "Eb", "F"],
+  "Ab": ["Ab", "Bb", "C", "Db", "Eb", "F", "G"],
+  "Bb": ["Bb", "C", "D", "Eb", "F", "G", "A"]
+};
+
+const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const semitoneOffsets = {
+  "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
+  "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
+  "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
+};
+const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
 function renderButtons(containerId, items, type) {
   const container = document.getElementById(containerId);
@@ -86,36 +113,21 @@ function updateExtensionButtonStates() {
   }
 }
 
-function resolveNote(originalRoot, interval, chordType) {
-  const semitoneOffsets = {
-    "1": 0, "b2": 1, "2": 2, "#2": 3, "b3": 3, "3": 4, "4": 5, "#4": 6,
-    "b5": 6, "5": 7, "#5": 8, "b6": 8, "6": 9, "bb7": 9, "b7": 10, "7": 11,
-    "b9": 1, "9": 2, "#9": 3, "11": 5, "#11": 6, "b13": 8, "13": 9
-  };
-
-  const enharmonicMap = {
-    1: { sharp: "C#", flat: "Db" },
-    3: { sharp: "D#", flat: "Eb" },
-    6: { sharp: "F#", flat: "Gb" },
-    8: { sharp: "G#", flat: "Ab" },
-    10: { sharp: "A#", flat: "Bb" }
-  };
-
-  const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  const aliasMap = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
-
-  const normalizedRoot = aliasMap[originalRoot] || originalRoot;
-  const baseIndex = chromatic.indexOf(normalizedRoot);
+function resolveNote(root, interval) {
   const offset = semitoneOffsets[interval] ?? 0;
+  const normalized = aliasMap[root] || root;
+  const baseIndex = chromatic.indexOf(normalized);
   const resolvedIndex = (baseIndex + offset + 12) % 12;
   const rawNote = chromatic[resolvedIndex];
 
-  const prefersFlat = chordType === "7" || originalRoot.includes("b");
-  if (enharmonicMap[resolvedIndex]) {
-    return prefersFlat ? enharmonicMap[resolvedIndex].flat : enharmonicMap[resolvedIndex].sharp;
-  }
+  const scale = majorScales[root];
+  if (!scale) return rawNote;
 
-  return rawNote;
+  const baseLetter = root[0];
+  const expectedLetter = String.fromCharCode(((baseLetter.charCodeAt(0) - 65 + Math.floor(offset / 2) + 1) % 7) + 65);
+
+  const match = scale.find(note => note[0] === expectedLetter);
+  return match || rawNote;
 }
 
 function updateChordDisplay(chordText, intervals = []) {
@@ -131,11 +143,11 @@ function updateChordDisplay(chordText, intervals = []) {
   const chordGroup = chordTypeMap[state.chordType];
   const chordObj = chordData[chordGroup][state.extension];
 
-  const allNotes = intervals.map(i => resolveNote(state.root, i, state.chordType));
+  const allNotes = intervals.map(i => resolveNote(state.root, i));
   display.textContent = `${state.root}${chordObj.label} (${allNotes.join(", ")})`;
 
-  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i, state.chordType));
-  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i, state.chordType));
+  const leftNotes = chordObj.voicing.left.map(i => resolveNote(state.root, i));
+  const rightNotes = chordObj.voicing.right.map(i => resolveNote(state.root, i));
   noteList.textContent = `LH: ${leftNotes.join(", ")} | RH: ${rightNotes.join(", ")}`;
 }
 
